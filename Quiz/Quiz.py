@@ -75,19 +75,19 @@ def setup_database():
             ("Physics", "The value of acceleration due to gravity (g) at the center of the Earth is?", "9.8 m/s^2", "Zero", "Infinity", "4.9 m/s^2", "B"),
             ("Physics", "What is the SI unit of electric charge?", "Volt", "Ampere", "Coulomb", "Ohm", "C"),
             ("Physics", "Ohm's law is represented by which equation?", "V = I/R", "V = IR", "P = IV", "R = IV", "B"),
-            ("Physics", "Refractive index of a medium with respect to vacuum is given by n = c/v, where v is?", "Speed of light in vacuum", "Frequency of light", "Speed of light in the medium", "Wavelength of light", "C"),
+            ("Physics", "Refractive index of a medium with respect to vacuum is given by n = c/v, where v is?", "Speed of light in vacuum", "Frequency of light", "Speed of light in the medium", "Wavelength", "C"),
             ("Physics", "The focal length of a concave mirror is taken as?", "Positive", "Negative", "Zero", "Infinity", "B"),
             ("Physics", "The half-life of a radioactive substance is inversely proportional to its?", "Atomic number", "Mass number", "Decay constant", "Initial quantity", "C"),
             ("Physics", "The de Broglie wavelength of a particle of momentum p is given by?", "lambda = h * p", "lambda = h / p", "lambda = p / h", "lambda = h^2 / p", "B"),
             ("Physics", "The photoelectric effect establishes the?", "Wave nature of light", "Particle nature of light", "Transverse nature of light", "Longitudinal nature of light", "B"),
-            ("Physics", "Young's double-slit experiment primarily demonstrates the?", "Particle nature of light", "Wave nature of light", "Electromagnetic nature of light", "Rectilinear propagation of light", "B"),
+            ("Physics", "Young's double-slit experiment primarily demonstrates the?", "Particle nature of light", "Wave nature of light", "Electromagnetic nature of light", "Rectilinear propagation", "B"),
             ("Physics", "Lenz's law is a consequence of the law of conservation of?", "Mass", "Charge", "Momentum", "Energy", "D"),
             ("Physics", "The SI unit of magnetic flux is?", "Tesla", "Weber", "Henry", "Gauss", "B"),
             ("Physics", "The dimensional formula of Planck's constant (h) is identical to that of?", "Angular momentum", "Linear momentum", "Force", "Power", "A"),
             ("Physics", "The escape velocity of a body from the Earth's surface does not depend on?", "Mass of the Earth", "Radius of the Earth", "Mass of the body", "Acceleration due to gravity", "C"),
             ("Physics", "For an adiabatic process of an ideal gas, which relation holds true?", "PV = constant", "P/V = constant", "PV^gamma = constant", "P^gamma V = constant", "C"),
             ("Physics", "According to the kinetic theory of gases, the pressure of an ideal gas is?", "1/3 * rho * v^2", "2/3 * rho * v^2", "1/2 * rho * v^2", "rho * v", "A"),
-            ("Physics", "Terminal velocity of a small sphere falling through a viscous fluid is proportional to?", "Radius of the sphere", "Square of the radius of the sphere", "Cube of the radius of the sphere", "Inverse of the radius of the sphere", "B"),
+            ("Physics", "Terminal velocity of a small sphere falling through a viscous fluid is proportional to?", "Radius of the sphere", "Square of the radius of the sphere", "Cube of the radius", "Fourth power of radius", "A"),
             ("Physics", "Bernoulli's equation is a statement of the law of conservation of?", "Mass", "Momentum", "Angular momentum", "Energy", "D"),
             ("Physics", "In an isothermal process involving an ideal gas, the change in internal energy is?", "Positive", "Negative", "Zero", "Maximum", "C"),
             ("Physics", "The time period of a simple pendulum depends on?", "Mass of the bob", "Amplitude of oscillation", "Length of the pendulum", "Both mass and length", "C"),
@@ -130,7 +130,7 @@ def setup_database():
             ("Chemistry", "The packing efficiency of a face-centered cubic (FCC) unit cell is approximately?", "52.4%", "68%", "74%", "48%", "C"),
             ("Chemistry", "What is the conjugate base of water (H2O)?", "H3O+", "OH-", "O2-", "H2", "B"),
             ("Chemistry", "What is the conjugate acid of ammonia (NH3)?", "NH2-", "NH4+", "NO3-", "N2H4", "B"),
-            ("Chemistry", "An ideal gas perfectly obeys the gas laws under?", "High pressure and low temperature", "High pressure and high temperature", "Low pressure and high temperature", "All conditions of temperature and pressure", "D"),
+            ("Chemistry", "An ideal gas perfectly obeys the gas laws under?", "High pressure and low temperature", "High pressure and high temperature", "Low pressure and high temperature", "All conditions", "C"),
             ("Chemistry", "The law of constant proportions was stated by?", "Antoine Lavoisier", "John Dalton", "Joseph Proust", "Amedeo Avogadro", "C"),
             ("Chemistry", "What is the shape of a water molecule (H2O)?", "Linear", "Bent / V-shaped", "Trigonal planar", "Tetrahedral", "B")
         ]
@@ -155,26 +155,39 @@ def run_quiz():
     print("3. Chemistry")
     print("4. Mixed (All Subjects)")
 
-    choice = input("Choose a topic (1-4): ").strip()
-    try:
-        count = int(input("How many questions do you want? (default: 3): ").strip() or "3")
-    except ValueError:
-        count = 3
-    count = max(1, min(count, 10))
+    # Validate menu choice
+    choice = input("\nChoose a topic (1-4): ").strip()
+    if choice not in ["1", "2", "3", "4"]:
+        print("Invalid choice. Please select 1-4.")
+        conn.close()
+        return
+    
+    # Validate and get number of questions
+    while True:
+        try:
+            count_input = input("How many questions do you want? (default: 3): ").strip()
+            count = int(count_input) if count_input else 3
+            
+            if count < 1 or count > 10:
+                print("Please enter a number between 1 and 10.")
+                continue
+            break
+        except ValueError:
+            print("Please enter a valid number.")
     
     # Define query filter based on selection
     if choice == "1":
         cursor.execute("SELECT question, option_a, option_b, option_c, option_d, correct_answer FROM quiz_questions WHERE subject='Math' ORDER BY RANDOM() LIMIT ?", (count,))
-        print("\n--- Math Quiz Starting ---")
+        print("\n--- Math Quiz Starting ---\n")
     elif choice == "2":
         cursor.execute("SELECT question, option_a, option_b, option_c, option_d, correct_answer FROM quiz_questions WHERE subject='Physics' ORDER BY RANDOM() LIMIT ?", (count,))
-        print("\n--- Physics Quiz Starting ---")
+        print("\n--- Physics Quiz Starting ---\n")
     elif choice == "3":
         cursor.execute("SELECT question, option_a, option_b, option_c, option_d, correct_answer FROM quiz_questions WHERE subject='Chemistry' ORDER BY RANDOM() LIMIT ?", (count,))
-        print("\n--- Chemistry Quiz Starting ---")
+        print("\n--- Chemistry Quiz Starting ---\n")
     else:
         cursor.execute("SELECT question, option_a, option_b, option_c, option_d, correct_answer FROM quiz_questions ORDER BY RANDOM() LIMIT ?", (count,))
-        print("\n--- Grand Mixed Quiz Starting ---")
+        print("\n--- Grand Mixed Quiz Starting ---\n")
         
     questions = cursor.fetchall()
     conn.close()
@@ -184,6 +197,7 @@ def run_quiz():
         return
 
     score = 0
+    questions_answered = 0
     total = len(questions)
     
     print("Type A, B, C, or D to answer. Type 'q' to quit.\n")
@@ -197,20 +211,52 @@ def run_quiz():
         print(f"  C) {opt_c}")
         print(f"  D) {opt_d}")
         
-        user_answer = input("Your answer: ").strip().upper()
+        # Validate user answer
+        while True:
+            user_answer = input("Your answer: ").strip().upper()
+            
+            if user_answer == 'Q':
+                print("\nExiting quiz early...\n")
+                questions_answered = index - 1
+                break
+            elif user_answer in ['A', 'B', 'C', 'D']:
+                break
+            else:
+                print("Invalid input. Please enter A, B, C, D, or Q to quit.")
         
         if user_answer == 'Q':
-            print("\nExiting early...")
             break
-            
+        
+        questions_answered = index
+        
         if user_answer == correct:
-            print("Correct! Excellent.\n")
+            print("✓ Correct! Excellent.\n")
             score += 1
         else:
-            print(f"Incorrect. The correct choice was {correct}.\n")
+            print(f"✗ Incorrect. The correct choice was {correct}.\n")
             
-    print(f"=== SCOREBOARD ===")
-    print(f"Final Score: {score}/{index if user_answer == 'Q' else total} ({(score/(index if user_answer == 'Q' else total))*100:.1f}%)")
+    # Display final scoreboard
+    print("=" * 50)
+    print("=== FINAL SCOREBOARD ===")
+    print("=" * 50)
+    
+    if questions_answered > 0:
+        percentage = (score / questions_answered) * 100
+        print(f"Final Score: {score}/{questions_answered} ({percentage:.1f}%)")
+        
+        # Performance feedback
+        if percentage == 100:
+            print("🏆 Perfect Score! Outstanding!")
+        elif percentage >= 80:
+            print("🌟 Excellent Performance!")
+        elif percentage >= 60:
+            print("👍 Good Job! Keep Practicing!")
+        else:
+            print("💪 Keep Practicing! You'll do better next time!")
+    else:
+        print("No questions answered.")
+    
+    print("=" * 50)
 
 if __name__ == "__main__":
     setup_database()
